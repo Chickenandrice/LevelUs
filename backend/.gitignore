@@ -1,3 +1,5 @@
 *.venv 
 *.env
 eleven_labs/bin
+eleven_labs/transcription.json
+*.mp3
