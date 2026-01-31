@@ -77,14 +77,18 @@ export default function MeetingView() {
               <CardTitle>Meeting Audio</CardTitle>
             </CardHeader>
             <CardContent>
-              <Field>
-                <FieldLabel htmlFor="picture">Upload Existing Audio</FieldLabel>
-                <FieldDescription>Select an audio file to upload.</FieldDescription>
-                <Input id="picture" type="file" onChange={(e) => setSelectedAudioFile(e.target.files ? e.target.files[0] : null)} accept='audio/*' />
-                {selectedAudioFile && <Button onClick={handleAudioFileUpload}>
-                  Upload
-                </Button>}
-              </Field>
+              <form id="audio-upload-form">
+                <Field>
+                  <FieldLabel htmlFor="picture">Upload Existing Audio</FieldLabel>
+                  <FieldDescription>Select an audio file to upload.</FieldDescription>
+                  <Input id="picture" type="file" onChange={(e) => setSelectedAudioFile(e.target.files ? e.target.files[0] : null)} accept='audio/*' />
+                  {selectedAudioFile && (
+                    <Button onClick={handleAudioFileUpload}>
+                      Upload
+                    </Button>
+                  )}
+                </Field>
+              </form>
             </CardContent>
           </Card>
           <Card>

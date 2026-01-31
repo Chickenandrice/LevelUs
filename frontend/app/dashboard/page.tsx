@@ -18,11 +18,12 @@ export default function DashboardPage() {
               Capture introductions, get live transcripts, and surface metrics so everyone can be heard.
             </p>
             <div className="flex items-center gap-4">
-              <Link href="/meetings/demo2">
-                <Button size="lg" disabled>
+              <Button size="lg" disabled nativeButton={false} render={
+                <Link href="/meetings/demo">
                   <Play className="size-5 mr-2" /> Open Demo Meeting
-                </Button>
-              </Link>
+                </Link>
+              }>
+              </Button>
 
               <MeetingProvider>
                 <MeetingCreateDialog />
