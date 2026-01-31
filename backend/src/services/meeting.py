@@ -18,8 +18,6 @@ class MeetingState:
         self.gemini_running = False
         self.last_cutoff = 0
 
-        self.listeners = set()
-
     def append(self, seg: DiarizedSegment):
         self.buffer.append(seg)
 
@@ -66,10 +64,6 @@ async def run_gemini(state: MeetingState):
     if state.gemini_running:
         return
 
-    text = state.recent_text().strip()
-    if not text:
-        return
-
     # Get the segment range that will be processed
     segments_in_range = [
         s for s in state.buffer
@@ -79,13 +73,24 @@ async def run_gemini(state: MeetingState):
     if not segments_in_range:
         return
     
+    # Prepare segments with timestamps for Gemini
+    segments_for_gemini = [
+        {
+            "speaker": s.speaker,
+            "start_ms": s.start_ms,
+            "end_ms": s.end_ms,
+            "text": s.text
+        }
+        for s in segments_in_range
+    ]
+    
     start_ms = min(s.start_ms for s in segments_in_range)
     end_ms = max(s.end_ms for s in segments_in_range)
 
     state.gemini_running = True
 
     try:
-        out = await call_gemini(text)
+        out = await call_gemini(segments_for_gemini)
         state.advance_cutoff()
         
         # Store the output with timestamp and segment range
@@ -96,13 +101,6 @@ async def run_gemini(state: MeetingState):
             **out
         )
         state.gemini_outputs.append(timestamped_output)
-
-        for ws in list(state.listeners):
-            await ws.send_json({
-                "type": "gemini_output",
-                "meeting_id": state.meeting_id,
-                "data": timestamped_output.model_dump()
-            })
 
     finally:
         state.gemini_running = False
