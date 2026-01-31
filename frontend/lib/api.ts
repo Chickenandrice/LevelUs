@@ -44,3 +44,34 @@ export async function sendTranscript(meetingId: string, participantId: string, t
     return { ok: true };
   }
 }
+
+/** Backend base URL for FastAPI (default: http://localhost:8000) */
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3000";
+
+export type TranscribeResult = {
+  text?: string;
+  words?: Array<{ text: string; start: number; end: number; speaker_id?: string }>;
+  language_code?: string;
+  [key: string]: unknown;
+};
+
+/**
+ * Send an MP3 (or other audio) file to the backend /transcribe endpoint.
+ * Returns the diarized transcription from ElevenLabs Batch Speech-to-Text.
+ */
+export async function transcribeAudio(file: Blob | File): Promise<TranscribeResult> {
+  const formData = new FormData();
+  formData.append("file", file, file instanceof File ? file.name : "audio.mp3");
+
+  const res = await fetch(`${BACKEND_URL}/transcribe`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(typeof err.detail === "string" ? err.detail : "Transcription failed");
+  }
+
+  return res.json() as Promise<TranscribeResult>;
+}

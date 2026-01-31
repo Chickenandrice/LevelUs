@@ -1,7 +1,10 @@
+import os
 import uuid
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from elevenlabs.client import ElevenLabs
 
 from src.models.schemas import DiarizedSegment, ControlMessage, MeetingStateResponse
+from eleven_labs.speech_to_transcript import convert_audio_to_transcription, save_transcription_to_json
 from src.services.meeting import (
     get_meeting,
     schedule_pause_trigger,
@@ -9,6 +12,33 @@ from src.services.meeting import (
 )
 
 router = APIRouter()
+
+
+@router.post("/transcribe")
+def transcribe_audio(file: UploadFile = File(...)):
+    """Accept an MP3 (or other audio) file, run ElevenLabs Batch Speech-to-Text with diarization, return JSON."""
+    api_key = os.getenv("ELEVENLABS_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="ELEVENLABS_API_KEY is not configured")
+
+    try:
+        # read the file from the uploaded file
+        audio_bytes = file.file.read()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to read uploaded file: {e}")
+
+    #   check if the file is empty or not
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Empty file")
+
+    #   convert the audio to transcription
+    try:
+        elevenlabs = ElevenLabs(api_key=api_key)
+        transcription = convert_audio_to_transcription(audio_bytes, elevenlabs)
+        result = save_transcription_to_json(transcription, output_dir=None)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/meeting/{meeting_id}", response_model=MeetingStateResponse)

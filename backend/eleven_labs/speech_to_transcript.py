@@ -9,9 +9,16 @@ import requests
 from elevenlabs.client import ElevenLabs
 
 
-def convert_audio_to_transcription(audio_path, elevenlabs):
-    """Convert audio to transcription that is diarized by speaker"""
-    audio_data = open(audio_path, "rb").read()
+def convert_audio_to_transcription(audio_input, elevenlabs):
+    """Convert audio to transcription that is diarized by speaker.
+    audio_input: file path (str | Path) or bytes
+    """
+    if isinstance(audio_input, (str, Path)):
+        audio_data = open(audio_input, "rb").read()
+    else:
+        audio_data = audio_input  # bytes or BytesIO
+    if hasattr(audio_data, "read"):
+        audio_data = audio_data.read()
     transcription = elevenlabs.speech_to_text.convert(
         file=audio_data,
         model_id="scribe_v2", # Model to use
