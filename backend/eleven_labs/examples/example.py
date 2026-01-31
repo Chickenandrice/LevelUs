@@ -13,7 +13,7 @@ elevenlabs = ElevenLabs(
 )
 
 audio = elevenlabs.text_to_speech.convert(
-    text="Joey Chen is such an ABB handsome man",
+    text="Hey... Have you met Snee? Oh, you havent? Oh... Here I am!",
     voice_id="JBFqnCBsd6RMkjVDRZzb",
     model_id="eleven_multilingual_v2",
     output_format="mp3_44100_128",
