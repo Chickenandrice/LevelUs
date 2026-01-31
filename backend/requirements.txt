@@ -5,3 +5,5 @@ pydantic
 httpx
 pytest
 pytest-asyncio
+elevenlabs
+python-dotenv

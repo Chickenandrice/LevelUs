@@ -1,4 +1,7 @@
 *.venv 
 *.env
 *.pytest_cache
-*__pycache__
+*__pycache__*.env
+eleven_labs/bin
+*.json
+*.mp3
