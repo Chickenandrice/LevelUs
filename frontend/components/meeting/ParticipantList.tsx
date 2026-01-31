@@ -12,9 +12,9 @@ export default function ParticipantList({
   onRemove,
 }: {
   participants: Participant[];
-  onSelect?: (id: string) => void;
-  selectedId?: string | null;
-  onRemove?: (id: string) => void;
+  onSelect?: (id: number) => void;
+  selectedId?: number | null;
+  onRemove?: (id: number) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -41,7 +41,7 @@ export default function ParticipantList({
                   {p.name ?? "(unnamed)"}
                 </ItemTitle>
                 <ItemDescription>
-                  Spoke: {(p.speakingTime / 1000).toFixed(1)}s · {p.transcripts.length} transcripts · {p.introduced ? "Introduced" : "Not introduced"}
+                  Spoke: {(p.totalSpeakingTime / 1000).toFixed(1)}s
                 </ItemDescription>
               </ItemContent>
 

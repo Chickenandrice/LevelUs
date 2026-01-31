@@ -3,13 +3,13 @@ from pydantic import BaseModel
 
 class Settings(BaseModel):
     gemini_api_key: str
-    gemini_model: str = "gemini-1.5-flash"
+    gemini_model: str = "gemini-2.5-flash"  # Default to available model
     pause_trigger_seconds: float = 1.5
     max_buffer_segments: int = 300
 
 settings = Settings(
     gemini_api_key=os.getenv("GEMINI_API_KEY", ""),
-    gemini_model=os.getenv("GEMINI_MODEL", "gemini-1.5-flash"),
+    gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),  # Default to available model
     pause_trigger_seconds=float(os.getenv("PAUSE_TRIGGER_SECONDS", "1.5")),
     max_buffer_segments=int(os.getenv("MAX_BUFFER_SEGMENTS", "300")),
 )

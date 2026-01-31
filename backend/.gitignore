@@ -5,4 +5,4 @@
 eleven_labs/bin
 *.json
 *.mp3
-__pycache__
+*__pycache__*
