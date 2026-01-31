@@ -1,2 +1,9 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+httpx
+pytest
+pytest-asyncio
 elevenlabs
 python-dotenv
