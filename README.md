@@ -8,6 +8,17 @@ Hack Violet 2026 submission
     python -m venv .venv
 
 ### Run the environment
-    source .venv/bin/activate
-    pip install requirements.txt
+    cd backend/
+    source .venv/Scripts/activate
+    pip install -r requirements.txt
+
+
+### To run ElevenLabs
+in the .venv, download https://ffmpeg.org/download.html
+
+    cd backend/eleven_labs/
+    mkdir bin
+
+Drag the extracted zip folder into here.
+
 

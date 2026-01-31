@@ -1,2 +1,3 @@
 *.venv 
 *.env
+eleven_labs/bin
