@@ -177,7 +177,7 @@ export default function Page() {
             equity, reduce interruptions, and surface ideas to credit speakers — all in a simple demo-ready app.
           </p>
           <p className="text-muted-foreground max-w-3xl pt-10">
-            Built with Next.js React, FastAPI, Gemini API, ElevenLabs, and AI tools.
+            Built with Next.js, React, FastAPI, Gemini API, ElevenLabs, Tailwind CSS, and AI tools.
           </p>
         </div>
       </section>
