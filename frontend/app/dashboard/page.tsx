@@ -15,7 +15,7 @@ export default function DashboardPage() {
             <h1 className="text-4xl font-extrabold mb-3">LevelUs</h1>
             <p className="text-lg text-muted-foreground mb-6 max-w-2xl">
               Run fairer meetings with live onboarding, speaker tracking, and proctor tools.
-              Capture introductions, get live transcripts, and surface metrics so everyone can be heard.
+              Capture introductions, get live transcripts, and surface metrics so everyone can be heard regardless of gender, race, or background.
             </p>
             <div className="flex items-center gap-4">
               <Button size="lg" disabled nativeButton={false} render={
@@ -32,12 +32,12 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-4">
-            <StatCard title="Avg Speaking" value="2m 14s" icon={Clock} />
-            <StatCard title="Active Meetings" value="1" icon={Play} />
+            <StatCard title="Average Speaking Time" value="2m 14s" icon={Clock} />
+            <StatCard title="Meetings" value="1" icon={Play} />
             <StatCard title="Engagement" value="78%" icon={BarChart2} />
           </div>
         </div>
-
+        
         <aside className="col-span-4">
           <div className="bg-card p-6 rounded-xl shadow-md">
             <h3 className="text-lg font-semibold mb-3">Recent Demos</h3>

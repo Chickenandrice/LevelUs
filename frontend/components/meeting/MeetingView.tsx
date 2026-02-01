@@ -62,8 +62,35 @@ export default function MeetingView() {
       const segments = [] as any[];
       const src = gem?.full_transcript ?? data.segments ?? [];
       (src || []).forEach((s: any, i: number) => {
-        segments.push({ id: `${s.speaker}-${s.start_ms}-${i}`, speakerId: s.speaker, speakerName: s.speaker, content: s.text, startMs: s.start_ms, endMs: s.end_ms });
+        // Handle new schema: speaker_id/speaker_name or old schema: speaker
+        const speakerId = s.speaker_id || s.speaker || 'unknown';
+        const speakerName = s.speaker_name || s.speaker || speakerId;
+        segments.push({ id: `${speakerId}-${s.start_ms}-${i}`, speakerId: speakerId, speakerName: speakerName, content: s.text, startMs: s.start_ms, endMs: s.end_ms });
       });
+
+      // Normalize inequalities - convert speaker_affected objects to strings
+      const normalizedInequalities = (gem?.inequalities || []).map((iq: any) => ({
+        ...iq,
+        speaker_affected: typeof iq.speaker_affected === 'object' && iq.speaker_affected !== null
+          ? (iq.speaker_affected.speaker_id || iq.speaker_affected.speaker_name || 'unknown')
+          : (iq.speaker_affected || 'unknown')
+      }));
+
+      // Normalize suggestions - convert target_speaker objects to strings
+      const normalizedSuggestions = (gem?.suggestions || []).map((s: any) => ({
+        ...s,
+        target_speaker: typeof s.target_speaker === 'object' && s.target_speaker !== null
+          ? (s.target_speaker.speaker_id || s.target_speaker.speaker_name || null)
+          : (s.target_speaker || null)
+      }));
+
+      // Normalize action_items - convert owner objects to strings
+      const normalizedActionItems = (gem?.action_items || []).map((item: any) => ({
+        ...item,
+        owner: typeof item.owner === 'object' && item.owner !== null
+          ? (item.owner.speaker_id || item.owner.speaker_name || null)
+          : (item.owner || null)
+      }));
 
       const mapped = {
         id: data.meeting_id ?? 'demo',
@@ -73,10 +100,17 @@ export default function MeetingView() {
         transcriptSegments: segments,
         summary: gem?.summary,
         importantPoints: gem?.important_points,
-        suggestions: gem?.suggestions,
-        inequalities: gem?.inequalities,
+        suggestions: normalizedSuggestions,
+        inequalities: normalizedInequalities,
         amplifiedTranscript: gem?.amplified_transcript,
-        fullTranscript: (gem?.full_transcript ?? []).map((t: any, i: number) => ({ speaker: t.speaker, start_ms: t.start_ms, end_ms: t.end_ms, text: t.text })),
+        fullTranscript: (gem?.full_transcript ?? []).map((t: any, i: number) => ({ 
+          speaker: t.speaker_id || t.speaker || 'unknown',
+          speaker_id: t.speaker_id || t.speaker,
+          speaker_name: t.speaker_name || null,
+          start_ms: t.start_ms, 
+          end_ms: t.end_ms, 
+          text: t.text 
+        })),
         statistics: gem?.meeting_statistics ? {
           total_duration_seconds: gem.meeting_statistics.total_duration_seconds,
           total_speakers: gem.meeting_statistics.total_speakers,
@@ -199,7 +233,9 @@ export default function MeetingView() {
                       <div className="text-sm font-medium">{(iq.type ?? "issue").replace(/_/g, " ")}</div>
                       <div className="mt-1 text-sm">{iq.description}</div>
                       {iq.speaker_affected && (
-                        <div className="text-xs text-muted-foreground mt-1">Speaker: {meeting.participants.find(p => p.id === iq.speaker_affected)?.name ?? iq.speaker_affected}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Speaker: {meeting.participants.find(p => p.id === iq.speaker_affected)?.name ?? iq.speaker_affected}
+                        </div>
                       )}
                       {typeof iq.timestamp_ms === 'number' && (
                         <div className="text-xs text-muted-foreground">At: {(iq.timestamp_ms / 1000).toFixed(2)}s</div>

@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from '@/components/ui/sonner';
+import PurpleAesthetic from "@/components/PurpleAesthetic";
 
 const notoSans = Noto_Sans({ variable: "--font-sans" });
 
@@ -25,12 +26,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
   return (
     <html lang="en" className={notoSans.variable} suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
+        <PurpleAesthetic />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <Navbar />
           <Toaster />
-          <div className="pt-4">{children}</div>
+          <div className="pt-4 relative z-0">{children}</div>
         </ThemeProvider>
       </body>
     </html>
