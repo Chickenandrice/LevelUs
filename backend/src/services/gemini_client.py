@@ -355,8 +355,19 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
         )
 
     # Parse JSON (best effort)
+    # Handle cases where Gemini returns explanatory text before/after JSON
+    # Find the first { and last } to extract the JSON object
+    first_brace = text.find('{')
+    last_brace = text.rfind('}')
+    
+    if first_brace == -1 or last_brace == -1 or first_brace >= last_brace:
+        # No valid JSON found, try original approach
+        text_clean = text.strip()
+    else:
+        # Extract JSON portion
+        text_clean = text[first_brace:last_brace + 1]
+    
     # Remove markdown code blocks if present
-    text_clean = text.strip()
     if text_clean.startswith("```"):
         # Remove ```json or ``` markers
         lines = text_clean.split("\n")
@@ -371,9 +382,8 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
         # Ensure all required fields are present with defaults
         defaults = {
             "summary": "",
-            "decisions": [],
             "action_items": [],
-            "important_points": [],  # Changed from "stats"
+            "important_points": [],
             "meeting_statistics": {
                 "total_duration_seconds": 0.0,
                 "total_speakers": 0,
@@ -381,13 +391,25 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
                 "total_words": 0,
                 "words_by_speaker": {},
                 "interruptions_count": 0,
-                "average_turn_length_seconds": 0.0
+                "average_turn_length_seconds": 0.0,
+                "invite_quiet_people_count": 0,
+                "credit_original_idea_person_count": 0,
+                "let_speaker_finish_count": 0,
+                "clarify_decision_count": 0,
+                "redirect_attention_count": 0,
+                "encourage_input_count": 0,
+                "rebalance_discussion_count": 0
             },
             "inequalities": [],
-            "full_transcript": [{"speaker": s["speaker"], "start_ms": s["start_ms"], "end_ms": s["end_ms"], "text": s["text"]} for s in segments_with_timestamps],
-            "amplified_transcript": [],  # New field
-            "suggestions": []
+            "full_transcript": [],
+            "amplified_transcript": [],
+            "suggestions": [],
+            "sentiment": None
         }
+        
+        # Remove "decisions" if present (not in new schema)
+        if "decisions" in result:
+            del result["decisions"]
         
         for key, default_value in defaults.items():
             if key not in result:
@@ -434,6 +456,31 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
         
         # Validate amplified_transcript structure
         if "amplified_transcript" in result and isinstance(result["amplified_transcript"], list):
+            valid_actions = [
+                "invite_quiet_people",
+                "credit_original_idea_person",
+                "let_speaker_finish",
+                "clarify_decision",
+                "redirect_attention",
+                "encourage_input",
+                "rebalance_discussion",
+                "do_nothing"
+            ]
+            
+            # Map common invalid values to valid ones
+            action_mapping = {
+                "intervene": "let_speaker_finish",
+                "invite": "invite_quiet_people",
+                "credit": "credit_original_idea_person",
+                "let_finish": "let_speaker_finish",
+                "clarify": "clarify_decision",
+                "redirect": "redirect_attention",
+                "encourage": "encourage_input",
+                "rebalance": "rebalance_discussion",
+                "none": "do_nothing",
+                None: "do_nothing"
+            }
+            
             for item in result["amplified_transcript"]:
                 if not isinstance(item, dict):
                     continue
@@ -442,15 +489,202 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
                     item["original_text"] = item.get("text", "")
                 if "highlighted_text" not in item:
                     item["highlighted_text"] = item.get("text", "")
+                # Fix recommended_action if invalid
+                if "recommended_action" in item:
+                    action = item["recommended_action"]
+                    if action not in valid_actions:
+                        # Try to map it
+                        mapped = action_mapping.get(action, "do_nothing")
+                        if mapped not in valid_actions:
+                            mapped = "do_nothing"
+                        item["recommended_action"] = mapped
+        
+        # Also validate suggestions.action with the same mapping
+        if "suggestions" in result and isinstance(result["suggestions"], list):
+            valid_actions = [
+                "invite_quiet_people",
+                "credit_original_idea_person",
+                "let_speaker_finish",
+                "clarify_decision",
+                "redirect_attention",
+                "encourage_input",
+                "rebalance_discussion",
+                "do_nothing"
+            ]
+            action_mapping = {
+                "intervene": "let_speaker_finish",
+                "invite": "invite_quiet_people",
+                "credit": "credit_original_idea_person",
+                "let_finish": "let_speaker_finish",
+                "clarify": "clarify_decision",
+                "redirect": "redirect_attention",
+                "encourage": "encourage_input",
+                "rebalance": "rebalance_discussion",
+                "none": "do_nothing",
+                None: "do_nothing"
+            }
+            for suggestion in result["suggestions"]:
+                if not isinstance(suggestion, dict):
+                    continue
+                if "action" in suggestion and suggestion["action"] not in valid_actions:
+                    # Try to map it
+                    action = suggestion["action"]
+                    mapped = action_mapping.get(action, "do_nothing")
+                    if mapped not in valid_actions:
+                        mapped = "do_nothing"
+                    suggestion["action"] = mapped
+        
+        # Convert speaker strings to SpeakerReference objects and fix schema
+        # Fix inequalities: convert speaker_affected string to object
+        if "inequalities" in result and isinstance(result["inequalities"], list):
+            for inequality in result["inequalities"]:
+                if not isinstance(inequality, dict):
+                    continue
+                if "speaker_affected" in inequality:
+                    speaker_affected = inequality["speaker_affected"]
+                    if isinstance(speaker_affected, str):
+                        inequality["speaker_affected"] = {
+                            "speaker_id": speaker_affected,
+                            "speaker_name": None
+                        }
+                    elif isinstance(speaker_affected, dict):
+                        # Ensure it has speaker_id
+                        if "speaker_id" not in speaker_affected:
+                            speaker_affected["speaker_id"] = speaker_affected.get("speaker", "unknown")
+        
+        # Fix suggestions: convert target_speaker string to object
+        if "suggestions" in result and isinstance(result["suggestions"], list):
+            for suggestion in result["suggestions"]:
+                if not isinstance(suggestion, dict):
+                    continue
+                if "target_speaker" in suggestion:
+                    target_speaker = suggestion["target_speaker"]
+                    if target_speaker is None:
+                        suggestion["target_speaker"] = None
+                    elif isinstance(target_speaker, str):
+                        suggestion["target_speaker"] = {
+                            "speaker_id": target_speaker,
+                            "speaker_name": None
+                        }
+                    elif isinstance(target_speaker, dict) and "speaker_id" not in target_speaker:
+                        target_speaker["speaker_id"] = target_speaker.get("speaker", "unknown")
+        
+        # Fix action_items: convert owner string to object
+        if "action_items" in result and isinstance(result["action_items"], list):
+            for item in result["action_items"]:
+                if not isinstance(item, dict):
+                    continue
+                if "owner" in item:
+                    owner = item["owner"]
+                    if owner is None:
+                        item["owner"] = None
+                    elif isinstance(owner, str):
+                        item["owner"] = {
+                            "speaker_id": owner,
+                            "speaker_name": None
+                        }
+                    elif isinstance(owner, dict) and "speaker_id" not in owner:
+                        owner["speaker_id"] = owner.get("speaker", "unknown")
+        
+        # Fix full_transcript: ensure speaker_id and speaker_name
+        if "full_transcript" in result and isinstance(result["full_transcript"], list):
+            for entry in result["full_transcript"]:
+                if not isinstance(entry, dict):
+                    continue
+                # Handle old schema with "speaker" field
+                if "speaker" in entry and "speaker_id" not in entry:
+                    entry["speaker_id"] = entry["speaker"]
+                    entry["speaker_name"] = None
+                # Ensure speaker_id exists
+                if "speaker_id" not in entry:
+                    entry["speaker_id"] = "unknown"
+                if "speaker_name" not in entry:
+                    entry["speaker_name"] = None
+        
+        # Fix amplified_transcript: ensure speaker_id and speaker_name
+        if "amplified_transcript" in result and isinstance(result["amplified_transcript"], list):
+            for entry in result["amplified_transcript"]:
+                if not isinstance(entry, dict):
+                    continue
+                # Handle old schema with "speaker" field
+                if "speaker" in entry and "speaker_id" not in entry:
+                    entry["speaker_id"] = entry["speaker"]
+                    entry["speaker_name"] = None
+                # Ensure speaker_id exists
+                if "speaker_id" not in entry:
+                    entry["speaker_id"] = "unknown"
+                if "speaker_name" not in entry:
+                    entry["speaker_name"] = None
+        
+        # Calculate action counts for meeting_statistics
+        if "meeting_statistics" in result and isinstance(result["meeting_statistics"], dict):
+            stats = result["meeting_statistics"]
+            # Initialize counts if not present
+            action_counts = {
+                "invite_quiet_people_count": 0,
+                "credit_original_idea_person_count": 0,
+                "let_speaker_finish_count": 0,
+                "clarify_decision_count": 0,
+                "redirect_attention_count": 0,
+                "encourage_input_count": 0,
+                "rebalance_discussion_count": 0
+            }
+            
+            # Count actions in suggestions (excluding do_nothing)
+            if "suggestions" in result and isinstance(result["suggestions"], list):
+                for suggestion in result["suggestions"]:
+                    if not isinstance(suggestion, dict):
+                        continue
+                    action = suggestion.get("action")
+                    if action and action != "do_nothing":
+                        count_key = f"{action}_count"
+                        if count_key in action_counts:
+                            action_counts[count_key] = action_counts.get(count_key, 0) + 1
+            
+            # Count actions in amplified_transcript (excluding do_nothing)
+            if "amplified_transcript" in result and isinstance(result["amplified_transcript"], list):
+                for entry in result["amplified_transcript"]:
+                    if not isinstance(entry, dict):
+                        continue
+                    action = entry.get("recommended_action")
+                    if action and action != "do_nothing":
+                        count_key = f"{action}_count"
+                        if count_key in action_counts:
+                            action_counts[count_key] = action_counts.get(count_key, 0) + 1
+            
+            # Update statistics with counts
+            for key, value in action_counts.items():
+                stats[key] = value
         
         return result
-    except Exception:
+    except Exception as e:
         # Fallback if model returns non-JSON - return structure with provided transcript
+        import traceback
+        print(f"JSON parsing error: {e}")
+        print(f"Error at line {e.__traceback__.tb_lineno if hasattr(e, '__traceback__') else 'unknown'}")
+        print(f"First 500 chars of response: {text[:500] if text else 'No text'}")
+        print(f"Last 500 chars of response: {text[-500:] if text and len(text) > 500 else text if text else 'No text'}")
+        
+        # Try to extract JSON from the text even if parsing failed
+        # This handles cases where there's explanatory text before/after JSON
+        first_brace = text.find('{') if text else -1
+        last_brace = text.rfind('}') if text else -1
+        
+        if first_brace != -1 and last_brace != -1 and first_brace < last_brace:
+            try:
+                json_text = text[first_brace:last_brace + 1]
+                result = json.loads(json_text)
+                # Apply all the same validation as above
+                # (This is a simplified version - full validation happens in Pydantic)
+                return result
+            except:
+                pass
+        
+        # Ultimate fallback
         return {
             "summary": text[:200] if text else "",
-            "decisions": [],
             "action_items": [],
-            "important_points": [],  # Changed from "stats"
+            "important_points": [],
             "meeting_statistics": {
                 "total_duration_seconds": 0.0,
                 "total_speakers": 0,
@@ -458,10 +692,18 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
                 "total_words": 0,
                 "words_by_speaker": {},
                 "interruptions_count": 0,
-                "average_turn_length_seconds": 0.0
+                "average_turn_length_seconds": 0.0,
+                "invite_quiet_people_count": 0,
+                "credit_original_idea_person_count": 0,
+                "let_speaker_finish_count": 0,
+                "clarify_decision_count": 0,
+                "redirect_attention_count": 0,
+                "encourage_input_count": 0,
+                "rebalance_discussion_count": 0
             },
             "inequalities": [],
-            "full_transcript": [{"speaker": s["speaker"], "start_ms": s["start_ms"], "end_ms": s["end_ms"], "text": s["text"]} for s in segments_with_timestamps],
-            "amplified_transcript": [],  # New field
-            "suggestions": []
+            "full_transcript": [{"speaker_id": s.get("speaker", s.get("speaker_id", "unknown")), "speaker_name": None, "start_ms": s["start_ms"], "end_ms": s["end_ms"], "text": s["text"]} for s in segments_with_timestamps],
+            "amplified_transcript": [],
+            "suggestions": [],
+            "sentiment": None
         }

@@ -134,6 +134,12 @@ async def transcribe_audio(
             if "amplified_transcript" not in gemini_output:
                 gemini_output["amplified_transcript"] = []
             
+            # Add "speaker" field to full_transcript items for frontend compatibility
+            if "full_transcript" in gemini_output and isinstance(gemini_output["full_transcript"], list):
+                for entry in gemini_output["full_transcript"]:
+                    if isinstance(entry, dict) and "speaker" not in entry:
+                        entry["speaker"] = entry.get("speaker_id", "unknown")
+            
             # Create timestamped output with validation
             timestamped_output = TimestampedGeminiOutput(
                 timestamp_ms=int(time.time() * 1000),
