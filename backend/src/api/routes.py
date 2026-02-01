@@ -39,10 +39,9 @@ async def ingest_segment(seg: DiarizedSegment):
     return {"ok": True}
 
 
-@router.post("/transcribe-audio")
+@router.post("/meetings/demo")
 async def transcribe_audio(
-    file: UploadFile = File(..., description="Audio file to transcribe"),
-    meeting_id: str = Form(..., description="Meeting ID for this transcription")
+    meeting_audio: UploadFile = File(..., description="Audio file to transcribe"),
 ):
     """
     Transcribe audio file using 11 Labs and automatically process through Gemini workflow.
@@ -58,21 +57,24 @@ async def transcribe_audio(
     """
     try:
         # Read audio file
-        audio_data = await file.read()
+        audio_data = await meeting_audio.read()
+        
         
         if not audio_data:
             return JSONResponse(
                 status_code=400,
                 content={"error": "Empty audio file"}
             )
+        print("HELLO3")
         
         # Transcribe using 11 Labs (diarization happens once at the end)
         segments = await transcribe_audio_file(
             audio_data=audio_data,
-            meeting_id=meeting_id,
+            meeting_id='demo',
             is_final=True  # Always final since diarization happens at end
         )
         
+        print("HELLO1")
         if not segments:
             return JSONResponse(
                 status_code=400,
@@ -80,8 +82,9 @@ async def transcribe_audio(
             )
         
         # Add all segments to meeting state
-        state = get_meeting(meeting_id)
+        state = get_meeting('demo')
         valid_segments = []
+        print("HELLO2")
         
         for seg in segments:
             if seg.text.strip():
@@ -93,6 +96,7 @@ async def transcribe_audio(
                 status_code=400,
                 content={"error": "No valid segments to process"}
             )
+        print(valid_segments)
         
         # Process all segments through Gemini immediately (no pause trigger needed)
         # Prepare segments with timestamps for Gemini
@@ -113,16 +117,42 @@ async def transcribe_audio(
         # Call Gemini directly with segments
         from src.services.gemini_client import call_gemini
         import time
+        import traceback
         
-        gemini_output = await call_gemini(segments_for_gemini)
-        
-        # Create timestamped output
-        timestamped_output = TimestampedGeminiOutput(
-            timestamp_ms=int(time.time() * 1000),
-            start_ms=start_ms,
-            end_ms=end_ms,
-            **gemini_output
-        )
+        try:
+            print("Calling Gemini...")
+            gemini_output = await call_gemini(segments_for_gemini)
+            print("Gemini call completed")
+            
+            # Validate and fix the output before creating the model
+            # Ensure all required fields are present
+            if "suggestions" in gemini_output:
+                for suggestion in gemini_output["suggestions"]:
+                    if "suggested_message" not in suggestion:
+                        suggestion["suggested_message"] = ""
+            
+            if "amplified_transcript" not in gemini_output:
+                gemini_output["amplified_transcript"] = []
+            
+            # Create timestamped output with validation
+            timestamped_output = TimestampedGeminiOutput(
+                timestamp_ms=int(time.time() * 1000),
+                start_ms=start_ms,
+                end_ms=end_ms,
+                **gemini_output
+            )
+        except Exception as gemini_error:
+            error_details = traceback.format_exc()
+            print(f"Gemini processing error: {gemini_error}")
+            print(f"Error details: {error_details}")
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "error": f"Gemini processing failed: {str(gemini_error)}",
+                    "details": str(gemini_error),
+                    "type": type(gemini_error).__name__
+                }
+            )
         
         # Store in meeting state
         state.gemini_outputs.append(timestamped_output)
@@ -130,7 +160,7 @@ async def transcribe_audio(
         
         return {
             "ok": True,
-            "meeting_id": meeting_id,
+            "meeting_id": 'demo',
             "segments_processed": len(valid_segments),
             "segments": [seg.model_dump() for seg in valid_segments],
             "gemini_output": timestamped_output.model_dump()
@@ -142,6 +172,7 @@ async def transcribe_audio(
             content={"error": str(e)}
         )
     except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=500,
             content={"error": f"Transcription failed: {str(e)}"}

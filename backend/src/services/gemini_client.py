@@ -253,6 +253,16 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
     # Build the prompt
     prompt = build_prompt(segments_with_timestamps)
     
+    # Check prompt length (Gemini has token limits)
+    prompt_length = len(prompt)
+    if prompt_length > 1000000:  # Roughly 250k tokens (conservative)
+        raise Exception(
+            f"Prompt too long ({prompt_length} chars). "
+            f"Consider processing fewer segments at once."
+        )
+    
+    print(f"Prompt length: {prompt_length} characters")
+    
     # List of models to try in order of preference
     # Use models that actually exist based on API listing
     models_to_try = [
@@ -302,6 +312,18 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
                 if text and text.strip():
                     return text, None, available_models  # Success
             except Exception as e:
+                error_str = str(e)
+                # Log specific error types
+                if "429" in error_str or "rate limit" in error_str.lower():
+                    print(f"Rate limit error with {model_name}: {error_str}")
+                elif "403" in error_str or "permission" in error_str.lower():
+                    print(f"Permission error with {model_name}: {error_str}")
+                elif "401" in error_str or "unauthorized" in error_str.lower():
+                    print(f"Authentication error with {model_name}: {error_str}")
+                elif "404" in error_str or "not found" in error_str.lower():
+                    print(f"Model not found: {model_name}")
+                else:
+                    print(f"Error with {model_name}: {error_str[:200]}")
                 last_error = e
                 # Continue to next model
                 continue
@@ -370,6 +392,56 @@ async def call_gemini(segments_with_timestamps: list) -> Dict[str, Any]:
         for key, default_value in defaults.items():
             if key not in result:
                 result[key] = default_value
+        
+        # Validate and fix suggestions - ensure suggested_message exists
+        if "suggestions" in result and isinstance(result["suggestions"], list):
+            for suggestion in result["suggestions"]:
+                if not isinstance(suggestion, dict):
+                    continue
+                if "suggested_message" not in suggestion:
+                    suggestion["suggested_message"] = ""
+                # Ensure action is valid
+                valid_actions = [
+                    "invite_quiet_people",
+                    "credit_original_idea_person",
+                    "let_speaker_finish",
+                    "clarify_decision",
+                    "redirect_attention",
+                    "encourage_input",
+                    "rebalance_discussion",
+                    "do_nothing"
+                ]
+                if "action" in suggestion and suggestion["action"] not in valid_actions:
+                    # Default to do_nothing if invalid
+                    suggestion["action"] = "do_nothing"
+        
+        # Validate and fix inequalities - ensure type is valid
+        if "inequalities" in result and isinstance(result["inequalities"], list):
+            valid_inequality_types = [
+                "interruption",
+                "idea_ignored",
+                "idea_taken",
+                "domination",
+                "exclusion",
+                "dismissal"
+            ]
+            for inequality in result["inequalities"]:
+                if not isinstance(inequality, dict):
+                    continue
+                if "type" in inequality and inequality["type"] not in valid_inequality_types:
+                    # Default to interruption if invalid
+                    inequality["type"] = "interruption"
+        
+        # Validate amplified_transcript structure
+        if "amplified_transcript" in result and isinstance(result["amplified_transcript"], list):
+            for item in result["amplified_transcript"]:
+                if not isinstance(item, dict):
+                    continue
+                # Ensure required fields exist
+                if "original_text" not in item:
+                    item["original_text"] = item.get("text", "")
+                if "highlighted_text" not in item:
+                    item["highlighted_text"] = item.get("text", "")
         
         return result
     except Exception:

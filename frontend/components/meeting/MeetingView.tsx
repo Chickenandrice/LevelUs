@@ -27,14 +27,14 @@ export default function MeetingView() {
     fetch('/api/meetings/demo', {
       method: 'POST',
       body: formData,
-    }).then(r => r.json()).then(async (request) => {
-      const data = await request.json();
+    }).then(r => r.json()).then(async (data) => {
       setMeeting({
         ...meeting,
         ...data,
       });
       toast.success("Audio file processed successfully.");
-    }).catch(() => {
+    }).catch((error) => {
+      console.error(error)
       toast.error("Failed to upload audio file.");
     });
   };
