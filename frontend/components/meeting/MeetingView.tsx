@@ -4,7 +4,7 @@ import { useMeeting } from "../../lib/meeting";
 import { ApiResponse } from "../../lib/api-types";
 import ParticipantList from "./ParticipantList";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Clock, Activity, Mic, Upload } from "lucide-react";
+import { Clock, Activity, Mic, Upload, Trash, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
@@ -251,6 +251,7 @@ export default function MeetingView() {
                       type="file"
                       accept='audio/*'
                       onChange={handleFileInputChange}
+                      disabled={isUploading}
                     />
                     {selectedAudioFile && (
                       <div className="mt-3 flex items-center justify-between rounded-md border bg-background px-3 py-2 text-sm">
@@ -260,7 +261,7 @@ export default function MeetingView() {
                             {(selectedAudioFile.size / 1024 / 1024).toFixed(2)} MB · {audioSource === "recorded" ? "Recorded in app" : "Uploaded"}
                           </div>
                         </div>
-                        <Button type="button" variant="ghost" size="sm" onClick={clearSelectedFile}>Clear</Button>
+                        <Button type="button" variant="ghost" size="icon" className={'size-6 text-destructive'} onClick={clearSelectedFile} disabled={!selectedAudioFile || isUploading} nativeButton={false} render={<Trash2 />}></Button>
                       </div>
                     )}
                     <div className="flex flex-row items-center gap-2">
