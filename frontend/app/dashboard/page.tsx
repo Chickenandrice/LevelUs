@@ -17,18 +17,9 @@ export default function DashboardPage() {
               Run fairer meetings with live onboarding, speaker tracking, and proctor tools.
               Capture introductions, get live transcripts, and surface metrics so everyone can be heard regardless of gender, race, or background.
             </p>
-            <div className="flex items-center gap-4">
-              <Button size="lg" disabled nativeButton={false} render={
-                <Link href="/meetings/demo">
-                  <Play className="size-5 mr-2" /> Open Demo Meeting
-                </Link>
-              }>
-              </Button>
-
-              <MeetingProvider>
-                <MeetingCreateDialog />
-              </MeetingProvider>
-            </div>
+            <MeetingProvider>
+              <MeetingCreateDialog />
+            </MeetingProvider>
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-4">
@@ -37,7 +28,7 @@ export default function DashboardPage() {
             <StatCard title="Engagement" value="78%" icon={BarChart2} />
           </div>
         </div>
-        
+
         <aside className="col-span-4">
           <div className="bg-card p-6 rounded-xl shadow-md">
             <h3 className="text-lg font-semibold mb-3">Recent Demos</h3>

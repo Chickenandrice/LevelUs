@@ -3,32 +3,32 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     console.log('🔄 Next.js API route: Proxying to backend...');
-    
+
     // Get the form data from the request
     const formData = await request.formData();
-    
+
     // Forward to backend
-    const backendUrl = 'http://localhost:8000/meetings/demo';
-    
+    const backendUrl = process.env.NODE_ENV === "development" ? "http://localhost:8000/meetings/demo" : "http://levelus-backend:8000/meetings/demo";
+
     console.log('📤 Forwarding to backend:', backendUrl);
-    
+
     const response = await fetch(backendUrl, {
       method: 'POST',
       body: formData,
       // Don't set Content-Type - let fetch handle it for FormData
     });
-    
+
     console.log('📥 Backend response:', {
       status: response.status,
       statusText: response.statusText,
       ok: response.ok,
       headers: Object.fromEntries(response.headers.entries())
     });
-    
+
     // Get response text
     const text = await response.text();
     console.log('Response text length:', text.length);
-    
+
     // Return the response with proper headers
     return new NextResponse(text, {
       status: response.status,

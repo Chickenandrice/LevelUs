@@ -12,6 +12,10 @@ from src.services.elevenlabs_service import transcribe_audio_file
 
 router = APIRouter()
 
+# make an OK route to check if the API is up
+@router.get("/ok")
+async def ok():
+    return {"ok": True}
 
 @router.get("/meeting/{meeting_id}", response_model=MeetingStateResponse)
 async def get_meeting_state(meeting_id: str):

@@ -4,6 +4,7 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
+import { Plus } from 'lucide-react';
 
 export default function MeetingCreateDialog() {
   const [name, setName] = useState("");
@@ -17,7 +18,9 @@ export default function MeetingCreateDialog() {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger render={<Button size="lg" variant="outline">Start Real Meeting</Button>}>
+      <AlertDialogTrigger render={<Button size="lg" variant="outline">
+        <Plus />
+        Start Meeting</Button>}>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
