@@ -1,0 +1,242 @@
+{
+    "ok": true,
+    "meeting_id": "demo",
+    "segments_processed": 9,
+    "segments": [
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_0",
+            "start_ms": 300,
+            "end_ms": 1919,
+            "text": "Pregnancy is covered, correct?",
+            "is_final": true,
+            "confidence": 1.0
+        },
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_1",
+            "start_ms": 3159,
+            "end_ms": 7259,
+            "text": "May I interrupt just, I'm glad you're addressing us instead of speaking to the camera.",
+            "is_final": true,
+            "confidence": 1.0
+        },
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_0",
+            "start_ms": 7279,
+            "end_ms": 7399,
+            "text": "Yeah.",
+            "is_final": true,
+            "confidence": 1.0
+        },
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_1",
+            "start_ms": 7639,
+            "end_ms": 8359,
+            "text": "Keep going.",
+            "is_final": true,
+            "confidence": 1.0
+        },
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_0",
+            "start_ms": 8400,
+            "end_ms": 28739,
+            "text": "Pregnancy is covered, correct? Speaking of, uh, wh- where we are addressing and who we are addressing, there are thirteen point seven million Americans on the other side of that screen right there. Hello? Hello. I'm talking to you because I work for you.",
+            "is_final": true,
+            "confidence": 1.0
+        },
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_1",
+            "start_ms": 28760,
+            "end_ms": 29260,
+            "text": "That's right.",
+            "is_final": true,
+            "confidence": 1.0
+        },
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_0",
+            "start_ms": 30420,
+            "end_ms": 48180,
+            "text": "And they deserve to see what is happening here, because there are plenty of districts, including Republican ones, where twenty-five percent of your constituents are on Medicaid. Forty percent of your constituents are on Medicaid, and yes, I am talking-",
+            "is_final": true,
+            "confidence": 1.0
+        },
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_1",
+            "start_ms": 48200,
+            "end_ms": 49479,
+            "text": "Will the gentlelady yield?",
+            "is_final": true,
+            "confidence": 1.0
+        },
+        {
+            "meeting_id": "demo",
+            "speaker": "spk_0",
+            "start_ms": 49520,
+            "end_ms": 58760,
+            "text": "I am talking to them, and I will not yield because it was a terribly disrespectful comment, and I will not yield to disrespectful men. Thank you very much.",
+            "is_final": true,
+            "confidence": 1.0
+        }
+    ],
+    "gemini_output": {
+        "summary": "The meeting primarily focused on the topic of Medicaid coverage and constituent representation, with spk_0 advocating for transparency and addressing the public directly. The discussion was marked by significant unequal speaking time, with spk_0 dominating the conversation. An explicit interruption occurred, followed by spk_0's refusal to yield due to perceived disrespectful comments, indicating underlying tension in the communication dynamics.",
+        "decisions": [],
+        "action_items": [],
+        "important_points": [
+            "Pregnancy coverage under Medicaid.",
+            "Importance of addressing constituents directly, especially the 13.7 million Americans watching.",
+            "High percentage of constituents (25-40%) in various districts relying on Medicaid.",
+            "Perceived disrespect in communication during the discussion."
+        ],
+        "meeting_statistics": {
+            "total_duration_seconds": 58.76,
+            "total_speakers": 2,
+            "speaking_time_by_speaker": {
+                "spk_0": 49.08,
+                "spk_1": 6.6
+            },
+            "total_words": 183,
+            "words_by_speaker": {
+                "spk_0": 156,
+                "spk_1": 27
+            },
+            "interruptions_count": 1,
+            "average_turn_length_seconds": 6.18
+        },
+        "inequalities": [
+            {
+                "type": "interruption",
+                "description": "spk_1 interrupted spk_0 while spk_0 was making a point about constituents on Medicaid, asking 'Will the gentlelady yield?'",
+                "speaker_affected": "spk_0",
+                "timestamp_ms": 48200,
+                "context": "spk_0 was explaining the high percentage of constituents on Medicaid, stating 'and yes, I am talking-', when spk_1 interjected with a request to yield."
+            },
+            {
+                "type": "domination",
+                "description": "spk_0 dominated the discussion, speaking for a significantly longer duration (49.08s) compared to spk_1 (6.60s), leading to an unequal distribution of speaking time.",
+                "speaker_affected": "spk_1",
+                "timestamp_ms": 300,
+                "context": "Throughout the meeting, spk_0 maintained the floor for the majority of the time, limiting opportunities for spk_1 to contribute equally to the discussion on healthcare coverage."
+            },
+            {
+                "type": "dismissal",
+                "description": "spk_0 explicitly stated a refusal to yield due to perceived 'terribly disrespectful comment' and 'disrespectful men', indicating a breakdown in respectful communication.",
+                "speaker_affected": "spk_0",
+                "timestamp_ms": 49520,
+                "context": "Following spk_1's request to yield, spk_0 directly addressed the perceived disrespect, highlighting a contentious dynamic in the interaction."
+            }
+        ],
+        "full_transcript": [
+            {
+                "speaker": "spk_0",
+                "start_ms": 300,
+                "end_ms": 1920,
+                "text": "Pregnancy is covered, correct?"
+            },
+            {
+                "speaker": "spk_1",
+                "start_ms": 3160,
+                "end_ms": 7260,
+                "text": "May I interrupt just, I'm glad you're addressing us instead of speaking to the camera."
+            },
+            {
+                "speaker": "spk_0",
+                "start_ms": 7280,
+                "end_ms": 7400,
+                "text": "Yeah."
+            },
+            {
+                "speaker": "spk_1",
+                "start_ms": 7640,
+                "end_ms": 8360,
+                "text": "Keep going."
+            },
+            {
+                "speaker": "spk_0",
+                "start_ms": 8400,
+                "end_ms": 28740,
+                "text": "Pregnancy is covered, correct? Speaking of, uh, wh- where we are addressing and who we are addressing, there are thirteen point seven million Americans on the other side of that screen right there. Hello? Hello. I'm talking to you because I work for you."
+            },
+            {
+                "speaker": "spk_1",
+                "start_ms": 28760,
+                "end_ms": 29260,
+                "text": "That's right."
+            },
+            {
+                "speaker": "spk_0",
+                "start_ms": 30420,
+                "end_ms": 48180,
+                "text": "And they deserve to see what is happening here, because there are plenty of districts, including Republican ones, where twenty-five percent of your constituents are on Medicaid. Forty percent of your constituents are on Medicaid, and yes, I am talking-"
+            },
+            {
+                "speaker": "spk_1",
+                "start_ms": 48200,
+                "end_ms": 49480,
+                "text": "Will the gentlelady yield?"
+            },
+            {
+                "speaker": "spk_0",
+                "start_ms": 49520,
+                "end_ms": 58760,
+                "text": "I am talking to them, and I will not yield because it was a terribly disrespectful comment, and I will not yield to disrespectful men. Thank you very much."
+            }
+        ],
+        "amplified_transcript": [
+            {
+                "speaker": "spk_0",
+                "start_ms": 30420,
+                "end_ms": 48180,
+                "original_text": "And they deserve to see what is happening here, because there are plenty of districts, including Republican ones, where twenty-five percent of your constituents are on Medicaid. Forty percent of your constituents are on Medicaid, and yes, I am talking-",
+                "highlighted_text": "and yes, I am talking-"
+            },
+            {
+                "speaker": "spk_1",
+                "start_ms": 48200,
+                "end_ms": 49480,
+                "original_text": "Will the gentlelady yield?",
+                "highlighted_text": "Will the gentlelady yield?"
+            },
+            {
+                "speaker": "spk_0",
+                "start_ms": 49520,
+                "end_ms": 58760,
+                "original_text": "I am talking to them, and I will not yield because it was a terribly disrespectful comment, and I will not yield to disrespectful men. Thank you very much.",
+                "highlighted_text": "I will not yield because it was a terribly disrespectful comment, and I will not yield to disrespectful men."
+            }
+        ],
+        "suggestions": [
+            {
+                "action": "let_speaker_finish",
+                "reason": "To ensure spk_0 can complete their thoughts without being cut off, promoting a more respectful and productive discussion flow.",
+                "priority": "high",
+                "target_speaker": "spk_1",
+                "suggested_message": "Let's allow spk_0 to finish their point about constituents on Medicaid before we move to another question."
+            },
+            {
+                "action": "rebalance_discussion",
+                "reason": "To encourage more balanced participation and ensure spk_1 has an opportunity to contribute more, given the significant speaking time imbalance.",
+                "priority": "medium",
+                "target_speaker": "spk_1",
+                "suggested_message": "We've heard a lot from spk_0 on this important topic. spk_1, did you have any further thoughts or questions you wanted to share regarding the discussion on Medicaid coverage?"
+            },
+            {
+                "action": "encourage_input",
+                "reason": "To address the underlying tension and ensure a respectful environment for all participants, refocusing on collaborative discussion.",
+                "priority": "high",
+                "target_speaker": null,
+                "suggested_message": "It sounds like there's some strong feeling here. Let's ensure we're all communicating respectfully and focusing on the substance of the discussion about healthcare coverage."
+            }
+        ],
+        "timestamp_ms": 1769908002268,
+        "start_ms": 300,
+        "end_ms": 58760
+    }
+}

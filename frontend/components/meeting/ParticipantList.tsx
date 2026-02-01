@@ -12,9 +12,9 @@ export default function ParticipantList({
   onRemove,
 }: {
   participants: Participant[];
-  onSelect?: (id: number) => void;
-  selectedId?: number | null;
-  onRemove?: (id: number) => void;
+  onSelect?: (id: string) => void;
+  selectedId?: string | null;
+  onRemove?: (id: string) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -44,14 +44,6 @@ export default function ParticipantList({
                   Spoke: {(p.totalSpeakingTime / 1000).toFixed(1)}s
                 </ItemDescription>
               </ItemContent>
-
-              <ItemActions>
-                {onRemove && (
-                  <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); onRemove(p.id); }}>
-                    <Trash className="h-4 w-4 text-destructive" />
-                  </Button>
-                )}
-              </ItemActions>
             </Item>
           );
         })}
